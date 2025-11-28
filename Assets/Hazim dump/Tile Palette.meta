@@ -1,7 +1,12 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Hazim dump/Tile Palette.meta
 guid: f7926d1d66a5e424c91a6a56f8f0e81d
 folderAsset: yes
 DefaultImporter:
+========
+guid: 871b4fb35a101064b83081644c6ee78f
+TextScriptImporter:
+>>>>>>>> 2fb3b7b181e66430c8eb1d4365db53c5ab05dfa5:Assets/TextMesh Pro/Fonts/swinging_wake/Swinging Wake Font Info and Read Me - Sinister Fonts.txt.meta
   externalObjects: {}
   userData: 
   assetBundleName: 
