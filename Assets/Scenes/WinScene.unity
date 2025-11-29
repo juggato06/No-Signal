@@ -372,10 +372,10 @@ MonoBehaviour:
   typingSpeed: 0.1
   delayAfterLine: 3
   winLines:
-  - You made it out.
-  - But..
-  - The rest have...Perished.
-  - They're already gone.
+  - You wake up to a white ceiling, with the scent of sanitizers...
+  - Then, you woke up.
+  - Welcome back.
+  - ...Maybe.
   - THANK YOU FOR PLAYING!
   loseLines:
   - Losing signal...
