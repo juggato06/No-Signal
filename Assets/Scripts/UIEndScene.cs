@@ -3,11 +3,16 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections;
 
+[RequireComponent(typeof(AudioSource))]
 public class WinScreenUI : MonoBehaviour
 {
     [Header("UI Components")]
     [SerializeField] private TextMeshProUGUI dialogueText;
     [SerializeField] private GameObject buttonsPanel;
+
+    [Header("Audio Setup")]
+    [SerializeField] private AudioClip winSound;
+    [SerializeField] private AudioClip loseSound;
 
     [Header("Dialogue Configuration")]
     [SerializeField] private float typingSpeed = 0.05f;
@@ -34,10 +39,26 @@ public class WinScreenUI : MonoBehaviour
         "GAME OVER"
     };
 
+
     public static bool GameWon = true;
+
+    private AudioSource audioSource;
 
     private void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+
+
+        if (GameWon && winSound != null)
+        {
+            audioSource.PlayOneShot(winSound);
+        }
+        else if (!GameWon && loseSound != null)
+        {
+            audioSource.PlayOneShot(loseSound);
+        }
+
+
         if (buttonsPanel != null)
             buttonsPanel.SetActive(false);
 
@@ -51,6 +72,8 @@ public class WinScreenUI : MonoBehaviour
     {
 
         string[] currentLines = GameWon ? winLines : loseLines;
+
+ 
         foreach (string line in currentLines)
         {
             dialogueText.text = "";

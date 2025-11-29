@@ -15824,6 +15824,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3422076796826820998, guid: 0933cffe5e6540e4f855db50748afa33, type: 3}
+      propertyPath: maxSignalTime
+      value: 80
+      objectReference: {fileID: 0}
     - target: {fileID: 4511468432905065262, guid: 0933cffe5e6540e4f855db50748afa33, type: 3}
       propertyPath: m_LocalPosition.x
       value: 5.96
@@ -15904,7 +15908,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 0.811
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
