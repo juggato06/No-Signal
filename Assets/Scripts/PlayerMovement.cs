@@ -1,18 +1,30 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerSignalController : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
 
     [Header("The 'Already Gone' Mechanic")]
     [SerializeField] private Transform lightVisual;
-    [SerializeField] private float maxSignalTime = 60f;
+    [SerializeField] private float maxSignalTime = 80f;
     [SerializeField] private float startScale = 10f;
     [SerializeField] private float flickerStrength = 0.1f;
+    [SerializeField] private float pulseSpeed = 3f;
+
+    [Header("Critical State (Last 20s)")]
+    [SerializeField] private float criticalThreshold = 20f;
+    [SerializeField] private float criticalPulseSpeed = 10f; 
+    [SerializeField] private Color normalColor = Color.white;
+    [SerializeField] private Color criticalColor = Color.red;
+
+    [Header("UI")]
+    [Tooltip("Drag your TextMeshPro UI object here to show the countdown")]
+    [SerializeField] private TextMeshProUGUI timerText;
 
     [Header("Debug / Testing")]
     [Range(0f, 1f)]
@@ -50,7 +62,7 @@ public class PlayerMovement : MonoBehaviour
             lightVisual.localPosition = pos;
         }
 
-        UpdateSignalVisuals(1f);
+        UpdateSignalVisuals(1f, normalColor);
     }
 
     void Update()
@@ -79,15 +91,30 @@ public class PlayerMovement : MonoBehaviour
     void HandleSignalLoss()
     {
         currentSignalTimer -= Time.deltaTime;
+        bool isCritical = currentSignalTimer <= criticalThreshold;
+
+        float currentSpeed = isCritical ? criticalPulseSpeed : pulseSpeed;
+        Color currentColor = isCritical ? criticalColor : normalColor;
+
+        // UI Updates
+        if (timerText != null)
+        {
+            float timeToDisplay = Mathf.Max(0, currentSignalTimer);
+            int minutes = Mathf.FloorToInt(timeToDisplay / 60);
+            int seconds = Mathf.FloorToInt(timeToDisplay % 60);
+            timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+            timerText.color = currentColor;
+        }
 
         float signalPercent = Mathf.Clamp01(currentSignalTimer / maxSignalTime);
 
-        float noise = Random.Range(-flickerStrength, flickerStrength) * (1 - signalPercent);
-        float flickerPercent = Mathf.Clamp01(signalPercent + noise);
+        float pulse = Mathf.Sin(Time.time * currentSpeed) * flickerStrength;
+        float flickerPercent = Mathf.Clamp01(signalPercent + pulse);
 
         float finalIntensity = Mathf.Max(flickerPercent, minSignalIntensity);
 
-        UpdateSignalVisuals(finalIntensity);
+        UpdateSignalVisuals(finalIntensity, currentColor);
 
         if (currentSignalTimer <= 0)
         {
@@ -95,7 +122,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void UpdateSignalVisuals(float percent)
+    void UpdateSignalVisuals(float percent, Color tintColor)
     {
         if (lightVisual != null)
         {
@@ -104,12 +131,16 @@ public class PlayerMovement : MonoBehaviour
             lightVisual.localScale = new Vector3(currentScale, currentScale, 1f);
             currentDebugRadius = currentScale;
 
-            if (urpLight != null) urpLight.intensity = percent;
+            if (urpLight != null)
+            {
+                urpLight.intensity = percent;
+                urpLight.color = tintColor; 
+            }
 
             if (lightSprite != null)
             {
-                Color c = lightSprite.color;
-                c.a = percent;
+                Color c = tintColor;
+                c.a = percent; 
                 lightSprite.color = c;
             }
 
@@ -117,12 +148,13 @@ public class PlayerMovement : MonoBehaviour
             {
                 standardLight.intensity = percent * 2f;
                 standardLight.range = currentScale;
+                standardLight.color = tintColor;
             }
         }
 
         if (playerSprite != null)
         {
-            playerSprite.color = Color.Lerp(Color.black, Color.white, percent);
+            playerSprite.color = Color.Lerp(Color.black, tintColor, percent);
         }
     }
 
