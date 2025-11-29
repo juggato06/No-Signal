@@ -1,19 +1,25 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class PlayerSignalController : MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
 
     [Header("The 'Already Gone' Mechanic")]
-    [Tooltip("The Transform holding your Light/Glow Sprite")]
     [SerializeField] private Transform lightVisual;
-
     [SerializeField] private float maxSignalTime = 60f;
     [SerializeField] private float startScale = 10f;
     [SerializeField] private float flickerStrength = 0.1f;
+
+    [Header("Debug / Testing")]
+    [Range(0f, 1f)]
+    [SerializeField] private float minSignalIntensity = 0f;
+
+    [Header("Game Over Settings")]
+    [SerializeField] private string gameOverScene = "WinScene";
 
     private Rigidbody2D rb;
     private SpriteRenderer playerSprite;
@@ -24,6 +30,8 @@ public class PlayerSignalController : MonoBehaviour
     private Vector2 moveInput;
     private float currentSignalTimer;
     private bool isDead = false;
+
+    private float currentDebugRadius;
 
     void Start()
     {
@@ -36,6 +44,10 @@ public class PlayerSignalController : MonoBehaviour
             lightSprite = lightVisual.GetComponent<SpriteRenderer>();
             standardLight = lightVisual.GetComponent<Light>();
             urpLight = lightVisual.GetComponent<Light2D>();
+
+            Vector3 pos = lightVisual.localPosition;
+            pos.z = -1f;
+            lightVisual.localPosition = pos;
         }
 
         UpdateSignalVisuals(1f);
@@ -73,7 +85,9 @@ public class PlayerSignalController : MonoBehaviour
         float noise = Random.Range(-flickerStrength, flickerStrength) * (1 - signalPercent);
         float flickerPercent = Mathf.Clamp01(signalPercent + noise);
 
-        UpdateSignalVisuals(flickerPercent);
+        float finalIntensity = Mathf.Max(flickerPercent, minSignalIntensity);
+
+        UpdateSignalVisuals(finalIntensity);
 
         if (currentSignalTimer <= 0)
         {
@@ -85,18 +99,12 @@ public class PlayerSignalController : MonoBehaviour
     {
         if (lightVisual != null)
         {
-
             float currentScale = Mathf.Lerp(0f, startScale, percent);
+
             lightVisual.localScale = new Vector3(currentScale, currentScale, 1f);
+            currentDebugRadius = currentScale;
 
-
-            if (urpLight != null)
-            {
-                urpLight.intensity = percent;
-
-
-            }
-
+            if (urpLight != null) urpLight.intensity = percent;
 
             if (lightSprite != null)
             {
@@ -112,7 +120,6 @@ public class PlayerSignalController : MonoBehaviour
             }
         }
 
-
         if (playerSprite != null)
         {
             playerSprite.color = Color.Lerp(Color.black, Color.white, percent);
@@ -123,5 +130,15 @@ public class PlayerSignalController : MonoBehaviour
     {
         isDead = true;
         Debug.Log("Signal Lost. Game Over.");
+
+        WinScreenUI.GameWon = false;
+        SceneManager.LoadScene(gameOverScene);
+    }
+
+    void OnDrawGizmos()
+    {
+        if (lightVisual == null) return;
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(lightVisual.position, currentDebugRadius > 0 ? currentDebugRadius * 0.5f : startScale * 0.5f);
     }
 }
